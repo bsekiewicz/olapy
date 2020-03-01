@@ -17,6 +17,7 @@ before_install:
 
 install:
   - pip install -U pip setuptools tox tox-travis wheel poetry
+  - poetry --version
 
 python:
   - '2.7'
