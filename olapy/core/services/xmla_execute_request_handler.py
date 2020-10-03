@@ -94,7 +94,7 @@ class XmlaExecuteReqHandler(DictExecuteReqHandler):
         # [Geography].[Geography].[Continent]  -> first_lvlname : Country
         # [Geography].[Geography].[Europe]     -> first_lvlname : Europe
         all_level_columns = self._get_lvl_column_by_dimension(all_tuples)
-        for idx, tupl in enumerate(tupls):
+        for tupl in tupls:
             tuple_without_minus_1 = self.get_tuple_without_nan(tupl)
             current_lvl_name = split_df[tuple_without_minus_1[0]].columns[
                 len(tuple_without_minus_1) - first_att
@@ -416,12 +416,7 @@ class XmlaExecuteReqHandler(DictExecuteReqHandler):
         else:
             # iterate DataFrame vertically
             columns_loop = itertools.chain(
-                *[
-                    tuple
-                    for tuple in self.mdx_execution_result["result"].itertuples(
-                        index=False
-                    )
-                ]
+                *list(self.mdx_execution_result["result"].itertuples(index=False))
             )
 
         xml = xmlwitch.Builder()
@@ -495,12 +490,7 @@ class XmlaExecuteReqHandler(DictExecuteReqHandler):
 
         xml = xmlwitch.Builder()
 
-        slicer_list = sorted(
-            list(
-                set(all_dimensions_names)
-                - {table_name for table_name in self.columns_desc["all"]}
-            )
-        )
+        slicer_list = sorted(set(all_dimensions_names) - set(self.columns_desc["all"]))
 
         if "Measures" in slicer_list:
             slicer_list.insert(
@@ -797,10 +787,8 @@ class XmlaExecuteReqHandler(DictExecuteReqHandler):
             return self._generate_slicer_convert2formulas()
 
         unused_dimensions = sorted(
-            list(
-                set(self.executor.get_all_tables_names(ignore_fact=True))
-                - {table_name for table_name in self.columns_desc["all"]}
-            )
+            set(self.executor.get_all_tables_names(ignore_fact=True))
+            - set(self.columns_desc["all"])
         )
         xml = xmlwitch.Builder()
         if unused_dimensions:

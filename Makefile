@@ -1,31 +1,23 @@
-.PHONY: test unit full-test clean setup stage deploy
-
+.PHONY: default run test test-with-coverage clean develop lint tidy format
 
 SRC=olapy
 PKG=$(SRC)
 
-.PHONY:
 default: test lint
 
+all: default
 
-.PHONY:
 run:
 	python manage.py runserver
 
 #
 # testing
 #
-.PHONY:
 test:
 	pytest . --durations=10
 
-.PHONY:
 test-with-coverage:
 	pytest --tb=short --cov $(PKG) --cov-report term-missing .
-
-.PHONY:
-tox:
-	tox
 
 #
 # setup
@@ -45,21 +37,23 @@ develop:
 #
 lint: lint-python
 
+lint-ci: lint
+
 lint-python:
 	@echo "--> Linting Python files"
 	flake8 olapy tests
 
 	@make lint-py3k
-
 	@make lint-mypy
+	# @make lint-pylint
 
+lint-pylint:
 	@echo "Running pylint, some errors reported might be false positives"
 	-pylint -E --rcfile .pylint.rc $(SRC)
 
 lint-py3k:
 	@echo "Checking Py3k (basic) compatibility"
 	pylint --py3k -d W1637 *.py $(SRC) tests
-
 
 lint-mypy:
 	mypy olapy tests
@@ -82,16 +76,14 @@ clean:
 	rm -rf htmlcov
 
 tidy: clean
-	rm -rf .tox
+	rm -rf .tox .nox
 
 format:
 	black $(SRC) tests micro_bench demos *.py
 	isort -rc $(SRC) tests micro_bench demos *.py
 
 update-deps:
-	pip-compile -U > /dev/null
-	pip-compile > /dev/null
-	git --no-pager diff requirements.txt
+	poetry update
 
 #
 # update deps in windows OS
